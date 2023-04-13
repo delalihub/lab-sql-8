@@ -38,6 +38,13 @@ ORDER BY f.length DESC LIMIT 10;
 -- Display the most frequently rented movies in descending order.
 SELECT title, rental_rate FROm sakila.film
 ORDER BY title DESC;
+ -- Giancalo's
+ SELECT f.title, COUNT(r.rental_ID) as 'times_rented'
+FROM sakila.film f
+JOIN sakila.inventory i USING(film_id)
+JOIN sakila.rental r USING(inventory_id)
+GROUP BY f.title
+ORDER BY COUNT(r.rental_ID) DESC;
 
 #Question 5
 #List the top five genres in gross revenue in descending order.
@@ -50,15 +57,38 @@ SELECT * FROM sakila.payment p
 JOIN sakila.film f USING (rental_id)
 JOIN sakila.film_category fc ON f.film_id = fc.film_id
 JOIN sakila.category c ON fc.category_id = c.category_id;
+-- alternatively---
+SELECT c.name, SUM(amount) as 'gross_revenue'
+FROM sakila.category c
+JOIN sakila.film_category fc USING(category_id)
+JOIN sakila.inventory i 
+ON i.film_id = fc.film_id
+JOIN sakila.rental r
+ON i.inventory_id = r.inventory_id
+JOIN sakila.payment p
+ON r.rental_id = p.rental_id
+GROUP BY c.name
+ORDER BY gross_revenue DESC;
 
-#QUESTION 7 (Case of Self Joint)
+-- Question 6 Is "Academy Dinosaur" available for rent from Store 1?
+SELECT i.store_id, f.title, i.inventory_id
+FROM sakila.film f
+JOIN sakila.inventory i USING(film_id)
+WHERE f.title = 'Academy Dinosaur' and i.store_id = 1;
+
+#QUESTION 7 (Case of Self Joint) [My solution]
 #Get all pairs of actors that worked together
 SELECT * FROM sakila.film_actor;
 
-SELECT a1.actor_id, a2.actor_id, a1.film_id
+SELECT a1.actor_id, a2.actor_id, a1.film_id 
  FROM sakila.film_actor a1
  JOIN sakila.film_actor a2
  ON (a1.film_id =a2.film_id) AND (a1.actor_id <> a2.actor_id);
+  -- Alternativly solution---
+SELECT fa.film_id, f.title, a.first_name, a.last_name
+FROM sakila.actor a
+RIGHT JOIN sakila.film_actor fa USING(actor_id)
+JOIN sakila.film f USING(film_id);
  
  #8.Get all pairs of customers that have rented the same film more than 3 times.
  SELECT * FROM sakila.rental;
